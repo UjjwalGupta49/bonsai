@@ -25,7 +25,7 @@ def keywords_to_dict(output):
     return extracted_dict
 
 def llama_setup():
-    os.environ['REPLICATE_API_TOKEN'] = 'r8_OxBlp46BxDtls3mceyPjJ8xucYZEUvT4T9i7n'
+    os.environ['REPLICATE_API_TOKEN'] = '<REPLICATE_TOKEN>'
 
 def generate_keywords(user_input):
     llama_setup()
@@ -84,7 +84,7 @@ def make_github_request(query):
     url = "https://api.github.com/search/repositories"
     headers = {
         "Accept": "application/vnd.github+json",
-        "Authorization": "Bearer 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", # adding this token was intentional
+        "Authorization": "Bearer <GITHUB_ACESS_TOKEN>", 
         "X-GitHub-Api-Version": "2022-11-28"
     }
     response = requests.get(url, headers=headers, params={'q': query})
