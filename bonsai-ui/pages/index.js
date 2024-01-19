@@ -1,12 +1,9 @@
-import Image from 'next/image'
-import { Inter } from 'next/font/google'
-
-const inter = Inter({ subsets: ['latin'] })
 // pages/index.js
-
+import { useRouter } from 'next/router';
 import React, { useState } from 'react';
 
 const Home = () => {
+  const router = useRouter();
   const [inputValue, setInputValue] = useState('');
 
   const handleInputChange = (e) => {
@@ -15,13 +12,14 @@ const Home = () => {
 
   const handleSearch = () => {
     // Implement your search functionality here
-    alert(`Searching for: ${inputValue}`);
+    const result = `Searching for: ${inputValue}`;
+
+    // Redirect to result page with query parameter
+    router.push(`/result?result=${result}`);
   };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-black via-orange-500 to-black">
-      
-
       {/* Black bar on top with categories */}
       <div className="bg-black text-white p-4 w-full text-center fixed top-0 z-10">
         <div className="flex justify-center items-center">
@@ -36,14 +34,14 @@ const Home = () => {
 
       {/* Main content */}
       <div className="text-center mt-16">
-        <h1 className="text-8xl font-bold mb-12 text-gray font-bold="> {/* Increased mb-12 for more bottom margin */}
+        <h1 className="text-8xl font-bold mb-12 text-gray font-bold">
           Bonsai
         </h1>
         <div className="flex flex-col items-center">
           <input
             type="text"
-            className="border p-3 rounded-md text-lightGray bg-black w-96 mb-2 border-black shadow-md font-semibold "
-            placeholder="write your product idea "
+            className="border p-3 rounded-md text-lightGray bg-black w-96 mb-2 border-black shadow-md font-semibold"
+            placeholder="Write your product idea"
             value={inputValue}
             onChange={handleInputChange}
           />
