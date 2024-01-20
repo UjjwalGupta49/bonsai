@@ -17,7 +17,7 @@ app.config['DEBUG'] = False
 
 
 def llama_setup():
-    os.environ['REPLICATE_API_TOKEN'] = 'r8_L6937wBVLpE8jZyi1nqG2u1z1qOoNfT06xVJG'
+    os.environ['REPLICATE_API_TOKEN'] = 'r8_GKghICgCybdYhSJ3VI85aCzSfBI7da20kk9XZ'
 
 
 def generate_keywords(user_input):
@@ -104,7 +104,7 @@ def git():
         url = "https://api.github.com/search/repositories"
         headers = {
             "Accept": "application/vnd.github+json",
-            "Authorization": "Bearer <TOKEN>",
+            "Authorization": "Bearer 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",
             "X-GitHub-Api-Version": "2022-11-28"
         }
         response = requests.get(url, headers=headers, params={'q': query})
@@ -117,6 +117,7 @@ def git():
             name = item.get('name', 'N/A')
             link = item.get('html_url', 'N/A')
             description = item.get('description', 'No description available')
+            star=item.get('stargazers_count','N/A')
             pattern = re.compile(r'https://github\.com/([^/]+)/')
             match = pattern.search(link)
             username = match.group(1)
@@ -130,6 +131,7 @@ def git():
             x.append(name)
             x.append(link)
             x.append(description)
+            x.append(star)
             x.append(total_issues)
 
     def main(user_input):
@@ -149,18 +151,18 @@ def git():
             main(user_input)
         except Exception as e:
             return jsonify({"error": str(e)})
-    D = []
+
 
     def L2D(L):
         x = len(L)
-        for i in range(0, x, 4):
-            r = {"Issue": L[i + 3], "Description": L[i + 2], "Link": L[i + 1], "Project Name": L[i]}
+        for i in range(0, x, 5):
+            r = {"star":L[i+3],"Issue": L[i + 4], "Description": L[i + 2], "Link": L[i + 1], "Project Name": L[i]}
             D.append(r)
 
     L2D(x)
     sorted_projects = sorted(D, key=lambda x: x["Issue"], reverse=True)
     return jsonify(sorted_projects)
-
+D = []
 
 #Product Hunt
 @app.route("/producthunt")
@@ -305,7 +307,7 @@ def product():
         print(f"{Fore.RED}Product Hunt Error:{Style.RESET_ALL} Unable to retrieve data from Product Hunt")
 
 
-    prod=[]
+
     def ListTD(L):
         x = len(L)
         for i in range(0, x, 3):
@@ -313,14 +315,15 @@ def product():
             prod.append(r)
 
     ListTD(pro)
+    hell.pop()
     return prod
+prod=[]
 
 #Summary
 @app.route("/summary")
 def summary():
-    return "Ujjwal"
+    return 9
 
-#Runner
 if __name__ == "__main__":
     print("http://127.0.0.1:5000/github")
     print("http://127.0.0.1:5000/producthunt")
