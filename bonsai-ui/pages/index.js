@@ -1,6 +1,7 @@
 // pages/index.js
 import { useRouter } from 'next/router';
 import React, { useState } from 'react';
+import axios from 'axios';
 
 const Home = () => {
   const router = useRouter();
@@ -9,13 +10,48 @@ const Home = () => {
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
   };
+  const fetchData = async (user) => {
+    try {
+      // Define your API endpoint and parameters
+      const apiUrl = 'http://127.0.0.1:5000/github';
+      const params = {
+        user_input: user_input,
+      };
 
-  const handleSearch = () => {
+      // Convert the parameters into a query string
+      const queryString = Object.keys(params)
+        .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
+        .join('&');
+
+      // Combine the API endpoint and the query string
+      const urlWithParams = `${apiUrl}?${queryString}`;
+
+      // Send the GET request
+      const response = await fetch(urlWithParams);
+
+      // Handle the response
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Data:', data);
+      } else {
+        console.error('Error:', response.status);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+      };
+
+  const handleSearch = async() => {
     // Implement your search functionality here
     const result = `Searching for: ${inputValue}`;
-
-    // Redirect to result page with query parameter
-    router.push(`/result?result=${result}`);
+    try{
+      const response = await axios.get(`http://127.0.0.1:5000/github?user_input=${JSON.stringify(inputValue)}`)
+      console.log('Server response:', response.data);
+      router.push(`/result?result=${response.data}`);
+    }  
+    catch (error) {
+      console.error('Error submitting response:', error);
+    }    
   };
 
   return (

@@ -16,7 +16,7 @@ const Result = () => {
       <h1 className="text-5xl font-bold mt-3 border-b pb-4">
         {result.replace('Searching for: ', '')}
       </h1>
-
+      {console.log(result)}
       {/* Summary white block */}
       <div className="bg-white text-black p-8 mt-8 max-w-3xl rounded-md overflow-hidden mx-4 relative flex items-start">
         {/* Left side images */}
