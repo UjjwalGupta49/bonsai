@@ -85,10 +85,24 @@ const Result = () => {
             <img src="/static/images/GitHub logo.svg" alt="Project Image" width={170} height={170} />
           </div>
           <h2 className="text-2xl md:text-3xl font-bold text-left mb-4">Projects</h2>
-          <div className="min-w-72 md:min-w-96 min-h-72 md:min-h-96 bg-white rounded-md p-4 overflow-auto">
+          <div className="w-72 md:w-96 bg-white rounded-md p-4">
+            {/* Iterating over the first 5 GitHub projects */}
+            {Array.isArray(github) && github.slice(0, 5).map((project, index) => (
+              <div key={index} className="mb-4 last:mb-0">
+                <a href={project.Link} target="_blank" rel="noopener noreferrer" className="text-lg text-gray-700 font-semibold hover:text-blue-600">
+                  {project["Project Name"].length > 50 
+                    ? `${project["Project Name"].substring(0, 50)}...` 
+                    : project["Project Name"]
+                  }
+                </a>
+                <p className="text-sm text-gray-700">{project.Description}</p>
+                <p className="text-xs text-gray-500">Issues: {project.Issue}</p>
+              </div>
+))}
+
           </div>
- {/* Larger white box */}
         </div>
+
 
         {/* Startups */}
         <div className="flex flex-col items-center mb-8 md:mb-0 md:mx-auto">
