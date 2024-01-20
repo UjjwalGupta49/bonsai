@@ -42,7 +42,7 @@ const Result = () => {
         {/* Left side images */}
         <div className="flex-shrink-0">
           {/* Add your image source here */}
-          <img src="bx-cloud.svg.png" alt="Image 1" className="w-8 h-8 rounded-full" />
+          <img src={"/static/images/cloud.png"} alt="Image 1" className="w-8 h-8 rounded-full" />
         </div>
 
         {/* Text content */}
@@ -51,7 +51,7 @@ const Result = () => {
             <p className="text-2xl font-bold">Summary</p>
             {/* Top right text */}
             <div className="ml-auto">
-              <img src="bulb.png" alt="Image 2" className="w-6 h-6 rounded-full mt-0.4" />
+              <img src="/static/images/bulb.png" alt="Image 2" className="w-6 h-6 rounded-full mt-0.4" />
             </div>
             <p className="text-lg font-bold">llama2</p>
           </div>
