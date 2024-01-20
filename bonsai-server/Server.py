@@ -98,7 +98,7 @@ def home():
         url = "https://api.github.com/search/repositories"
         headers = {
             "Accept": "application/vnd.github+json",
-            "Authorization": "Bearer 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",
+            "Authorization": "Bearer <TOKEN>",
             "X-GitHub-Api-Version": "2022-11-28"
         }
         response = requests.get(url, headers=headers, params={'q': query})
