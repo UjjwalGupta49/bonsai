@@ -1,7 +1,6 @@
 // pages/index.js
 import { useRouter } from 'next/router';
 import React, { useState } from 'react';
-import axios from 'axios';
 
 const Home = () => {
   const router = useRouter();
