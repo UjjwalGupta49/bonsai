@@ -10,48 +10,9 @@ const Home = () => {
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
   };
-  const fetchData = async (user) => {
-    try {
-      // Define your API endpoint and parameters
-      const apiUrl = 'http://127.0.0.1:5000/github';
-      const params = {
-        user_input: user_input,
-      };
-
-      // Convert the parameters into a query string
-      const queryString = Object.keys(params)
-        .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
-        .join('&');
-
-      // Combine the API endpoint and the query string
-      const urlWithParams = `${apiUrl}?${queryString}`;
-
-      // Send the GET request
-      const response = await fetch(urlWithParams);
-
-      // Handle the response
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Data:', data);
-      } else {
-        console.error('Error:', response.status);
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    }
-      };
-
+  
   const handleSearch = async() => {
-    // Implement your search functionality here
-    const result = `Searching for: ${inputValue}`;
-    try{
-      const response = await axios.get(`http://127.0.0.1:5000/github?user_input=${JSON.stringify(inputValue)}`)
-      console.log('Server response:', response.data);
-      router.push(`/result?result=${response.data}`);
-    }  
-    catch (error) {
-      console.error('Error submitting response:', error);
-    }    
+    router.push(`/result?result=${inputValue}`);
   };
 
   return (
@@ -70,7 +31,7 @@ const Home = () => {
 
       {/* Main content */}
       <div className="text-center mt-16">
-        <h1 className="text-8xl font-bold mb-12 text-gray font-bold">
+        <h1 className="text-8xl font-bold mb-12 text-gray">
           Bonsai
         </h1>
         <div className="flex flex-col items-center">

@@ -104,7 +104,7 @@ def git():
         url = "https://api.github.com/search/repositories"
         headers = {
             "Accept": "application/vnd.github+json",
-            "Authorization": "Bearer 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",
+            "Authorization": "Bearer <TOKEN>",
             "X-GitHub-Api-Version": "2022-11-28"
         }
         response = requests.get(url, headers=headers, params={'q': query})
