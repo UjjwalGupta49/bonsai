@@ -1,22 +1,42 @@
 // pages/result.js
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useRouter } from 'next/router';
+import { useState } from 'react';
+import axios from 'axios';
 
 const Result = () => {
   const router = useRouter();
   const result = router.query.result;
+  const [github, setGithub] = useState('');
 
   // Function to handle navigation back to the index page
   const handleGoBack = () => {
     router.push('/');
   };
 
+  const getGithubData = async (result) => {
+    try {
+      const github = await axios.get(`http://127.0.0.1:5000/github?user_input=${JSON.stringify(result)}`);
+      console.log(github.data);
+      localStorage.setItem('github', JSON.stringify(github.data));
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  }
+
+  useEffect(() => {
+    console.log(result)
+    const githubData = getGithubData(result); setGithub(githubData);
+    
+  }, []);
+
+
+
   return (
     <div className="flex flex-col items-center justify-start min-h-screen bg-gradient-to-b from-orange-500 to-purple-800 text-white">
       <h1 className="text-5xl font-bold mt-3 border-b pb-4">
         {result.replace('Searching for: ', '')}
       </h1>
-      {console.log(result)}
       {/* Summary white block */}
       <div className="bg-white text-black p-8 mt-8 max-w-3xl rounded-md overflow-hidden mx-4 relative flex items-start">
         {/* Left side images */}
