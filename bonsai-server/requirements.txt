@@ -7,5 +7,4 @@ pytz
 click
 colorama
 flask-cors
-difflib
 colorama
