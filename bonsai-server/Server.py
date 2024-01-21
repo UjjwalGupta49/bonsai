@@ -17,7 +17,7 @@ app.config['DEBUG'] = False
 
 
 def llama_setup():
-    os.environ['REPLICATE_API_TOKEN'] = 'r8_GKghICgCybdYhSJ3VI85aCzSfBI7da20kk9XZ'
+    os.environ['REPLICATE_API_TOKEN'] = '<REPLICATE_TOKEN>'
 
 
 def generate_keywords(user_input):
@@ -68,9 +68,12 @@ def generate_keywords(user_input):
     ):
         output += str(event)
     keywords = keywords_to_dict(output)
-    first_key = next(iter(keywords))
-    hell.append(first_key)
-    return keywords
+    if 'undefined' in keywords.values():
+        return 'Invalid'
+    else:
+        first_key = next(iter(keywords))
+        hell.append(first_key)
+        return keywords
 hell=[]
 
 def keywords_to_dict(output):
@@ -104,7 +107,7 @@ def git():
         url = "https://api.github.com/search/repositories"
         headers = {
             "Accept": "application/vnd.github+json",
-            "Authorization": "Bearer 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",
+            "Authorization": "Bearer <GITHUB_TOKEN>",
             "X-GitHub-Api-Version": "2022-11-28"
         }
         response = requests.get(url, headers=headers, params={'q': query})
@@ -152,7 +155,7 @@ def git():
         except Exception as e:
             return jsonify({"error": str(e)})
 
-
+    D = []
     def L2D(L):
         x = len(L)
         for i in range(0, x, 5):
@@ -160,164 +163,189 @@ def git():
             D.append(r)
 
     L2D(x)
-    sorted_projects = sorted(D, key=lambda x: x["Issue"], reverse=True)
+    sorted_projects = D.copy()
+    del x
+    del D
     return jsonify(sorted_projects)
-D = []
+
+
+
 
 #Product Hunt
 @app.route("/producthunt")
 def product():
-    user_input=hell[0]
+    if len(hell)<=0:
+        return 'invalid'
+    else:
+        user_input=hell[0]
 
-    def search_product_hunt_for_keywords(words):
-        API_URL = "https://api.producthunt.com/v2/api/graphql"
-        API_TOKEN = "ff_NiFAD0WKqGnk8l_GIQVRCgVetuULSznJE38kKpYQ"
+        def search_product_hunt_for_keywords(words):
+            API_URL = "https://api.producthunt.com/v2/api/graphql"
+            API_TOKEN = "ff_NiFAD0WKqGnk8l_GIQVRCgVetuULSznJE38kKpYQ"
 
-        # Graph QL query
-        graphql_query = f"""
-        query {{
-            posts(topic:"{words}") {{
-                edges {{
-                    node {{
-                        name
-                        website
-                        description
+            # Graph QL query
+            graphql_query = f"""
+            query {{
+                posts(topic:"{words}") {{
+                    edges {{
+                        node {{
+                            name
+                            website
+                            description
+                        }}
                     }}
                 }}
             }}
-        }}
-        """
+            """
 
-        headers = {
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {API_TOKEN}"
-        }
+            headers = {
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {API_TOKEN}"
+            }
 
-        response = requests.post(API_URL, headers=headers, data=json.dumps({"query": graphql_query}))
+            response = requests.post(API_URL, headers=headers, data=json.dumps({"query": graphql_query}))
 
-        if response.status_code == 200:
-            return response.json()
+            if response.status_code == 200:
+                return response.json()
+            else:
+                print(f"{Fore.RED}Product Hunt Error:{Style.RESET_ALL} {response.status_code} {response.text}")
+                return None
+
+        pro = []
+
+        def display_product_hunt_info(product_hunt_results):
+            for post in product_hunt_results.get('data', {}).get('posts', {}).get('edges', []):
+                name = post.get('node', {}).get('name', 'N/A')
+                website = post.get('node', {}).get('website', 'N/A')
+                description = post.get('node', {}).get('description', 'No description available')
+                pro.append(name)
+                pro.append(website)
+                pro.append(description)
+
+        def find_most_similar_word(word, word_list):
+            max_similarity = 0
+            most_similar_word = None
+
+            for other_word in word_list:
+                similarity_ratio = SequenceMatcher(None, word, other_word).ratio()
+
+                # Update the most similar word if a higher similarity ratio is found
+                if similarity_ratio > max_similarity:
+                    max_similarity = similarity_ratio
+                    most_similar_word = other_word
+
+            return most_similar_word, max_similarity
+
+        word_to_compare = user_input
+        word_list = [
+            "productivity", "tech", "developer-tools", "marketing", "artificial-intelligence", "user-experience",
+            "design-tools", "internet-of-things", "wearables", "home", "analytics", "growth-hacking", "photography",
+            "books", "web-app", "bots", "ios", "mac", "games", "api-1", "social-media", "task-management",
+            "health-fitness", "education", "slack", "prototyping", "product-hunt", "open-source", "writing", "android",
+            "music", "chrome-extensions", "messaging", "social-network", "venture-capital", "virtual-reality",
+            "fintech",
+            "touch-bar-apps", "augmented-reality", "streaming-services", "github", "travel", "software-engineering",
+            "e-commerce", "crypto", "branding", "news", "saas", "email", "seo", "email-marketing", "calendar",
+            "global-nomad", "freelance", "linkedin", "advertising", "coffee", "investing", "crowdfunding", "gifs",
+            "twitter",
+            "spotify", "startup-books", "imessage-apps", "instagram", "drones", "design-books", "wordpress", "sales",
+            "a-b-testing", "snapchat", "art", "typography", "sketch", "medium", "search", "amazon", "text-editors",
+            "youtube",
+            "virtual-assistants", "apple", "reddit", "hiring", "biohacking", "movies", "photoshop", "languages",
+            "fashion",
+            "payments", "maps", "climate-tech", "windows", "meditation", "menu-bar-apps", "customer-communication",
+            "newsletters", "video-streaming", "time-tracking", "emoji", "funny", "hardware", "privacy",
+            "facebook-messenger",
+            "sports", "robots", "spreadsheets", "wi-fi", "icons", "3d-printer", "cooking", "public-relations",
+            "free-games",
+            "space", "alexa-skills", "website-builder", "pokemon", "notes", "home-automation", "beauty", "linux",
+            "outdoors",
+            "ipad", "vacation", "web-design", "on-demand", "startup-lessons", "storage", "delivery", "indie-games",
+            "web3",
+            "anonymous", "wallpaper", "meetings", "events", "business", "strategy-games", "apple-watch", "cars",
+            "ux-design",
+            "legal", "backpacks", "customer-success", "ridesharing", "tv", "transportation", "blockchain", "dating",
+            "ebook-reader", "board-games", "soundcloud", "pc", "telegram", "side-project", "browser-extensions",
+            "cryptocurrency", "drinking", "development", "no-code", "science-books", "social-media-marketing",
+            "couples",
+            "dogs", "pets", "apple-tv", "finance", "data-analytics", "standing-desks", "emulators", "puzzle-games",
+            "charity-giving", "health", "parenting", "accessories", "politics", "safari-extensions", "ad-blockers",
+            "comics-graphic-novels", "kids", "money", "adventure-games", "jewelry", "graphics-design", "batteries",
+            "cats",
+            "growth-hacks", "design", "oculus-rift", "card-games", "art-books", "sneakers-shoes", "remote-work",
+            "gear-vr",
+            "history-books", "open-world-games", "football", "weather", "retro-games", "biking", "star-wars",
+            "moving-storage", "wine", "action-games", "data-science", "adult-coloring-books", "playstation", "party",
+            "marketing-automation", "medical", "crafting-games", "quantified-self", "sci-fi-games",
+            "data-visualization",
+            "novels", "rpgs", "cookbooks", "social-impact", "simulation-games", "affiliate-marketing", "graphic-design",
+            "arkit", "djing", "online-learning", "business-intelligence", "fantasy-games", "maker-tools", "soccer",
+            "word-games", "alarms", "funny-games", "fashion-books", "custom-keyboards", "food-drink", "community",
+            "platformers", "nft", "sports-games", "tech-news", "yoga-books", "tabletop-games", "xbox",
+            "personal-finance",
+            "basketball", "celebrities", "digital-art", "playstation-vr", "work-in-progress", "notion", "animation",
+            "security", "surfing", "cannabis", "audio", "horror-games", "computers", "swimming", "data", "mmos",
+            "design-resources", "photo-video", "beauty-fashion", "influencer-marketing", "nintendo", "database",
+            "historical-games", "crime-books", "driving-games", "3d-modeling", "entertainment", "human-resources",
+            "first-person-shooter", "design-templates", "bitcoin", "isometric-games", "consulting", "skateboarding",
+            "development-language", "horror-books", "video", "fighting-games", "golf", "thriller-books", "donald-trump",
+            "logo-design", "tennis", "tower-defense-games", "illustration", "diversity-inclusion", "career",
+            "social-networking", "femtech", "zombie-games", "accounting", "crm", "monetization", "business-travel",
+            "kanye-west", "lifestyle", "htc-vive", "banking", "boxing", "science", "photo-editing", "shopping", "defi",
+            "fitness", "health-news", "dj-khaled", "fundraising", "home-improvement", "baseball", "clothing", "hacking",
+            "interior-design", "coding-books", "drake", "construction", "wii-u", "business-books", "operations",
+            "drawing",
+            "home-services", "marketing-attribution", "electronic-music", "vita", "ethereum", "home-office",
+            "event-marketing",
+            "change-management", "dao", "spirituality", "nutrition", "diy", "crafting", "food-delivery", "furniture",
+            "graphics",
+            "video-art", "dapp", "nature-outdoors", "budgeting", "statistical-analysis", "painting", "wireframing",
+            "live-music",
+            "comedy", "electric-cars", "lgbtq", "cell-phone", "nature", "family", "kids-parenting", "aquarium",
+            "cosmetics",
+            "calligraphy", "physics", "hotels", "mixed-reality", "marketing-calendar", "credit-card", "encryption",
+            "printing",
+            "camping", "classical-music", "password-manager", "political-news", "sdk", "live-events", "school",
+            "video-cameras",
+            "farming", "chat-rooms", "vpn", "memes", "running", "plants", "home-security", "extended-reality", "hiking",
+            "coloring",
+            "weightlifting", "local-news", "pop-culture", "inclusivity", "appliances", "streetwear", "modeling",
+            "edge-extensions",
+            "concerts", "survival", "motorcycles", "webcam", "personal-shopper", "hip-hop", "dieting", "toys", "babies",
+            "radio",
+            "alcohol", "tablet", "dslrs", "sporting-events", "intimacy", "sensors", "textbooks", "climbing",
+            "ticketing",
+            "gps",
+            "concert", "theater", "dining", "neighborhood", "college-sports", "military", "home-theater", "racing",
+            "tuning",
+            "snow-sports", "toddlers", "pregnancy", "psychedelics"
+        ]
+
+        most_similar_word, similarity_ratio = find_most_similar_word(word_to_compare, word_list)
+        product_hunt_results = search_product_hunt_for_keywords(most_similar_word)
+
+        if product_hunt_results:
+            display_product_hunt_info(product_hunt_results)
         else:
-            print(f"{Fore.RED}Product Hunt Error:{Style.RESET_ALL} {response.status_code} {response.text}")
-            return None
-    pro=[]
-    def display_product_hunt_info(product_hunt_results):
-        for post in product_hunt_results.get('data', {}).get('posts', {}).get('edges', []):
-            name = post.get('node', {}).get('name', 'N/A')
-            website = post.get('node', {}).get('website', 'N/A')
-            description = post.get('node', {}).get('description', 'No description available')
-            pro.append(name)
-            pro.append(website)
-            pro.append(description)
+            print(f"{Fore.RED}Product Hunt Error:{Style.RESET_ALL} Unable to retrieve data from Product Hunt")
+        prod = []
+        def ListTD(L):
+            x = len(L)
+            for i in range(0, x, 3):
+                r = {"Description": L[i + 2], "Website": L[i + 1], "Name": L[i]}
+                prod.append(r)
 
-    def find_most_similar_word(word, word_list):
-        max_similarity = 0
-        most_similar_word = None
-
-        for other_word in word_list:
-            similarity_ratio = SequenceMatcher(None, word, other_word).ratio()
-
-            # Update the most similar word if a higher similarity ratio is found
-            if similarity_ratio > max_similarity:
-                max_similarity = similarity_ratio
-                most_similar_word = other_word
-
-        return most_similar_word, max_similarity
-
-    word_to_compare = user_input
-    word_list = [
-        "productivity", "tech", "developer-tools", "marketing", "artificial-intelligence", "user-experience",
-        "design-tools", "internet-of-things", "wearables", "home", "analytics", "growth-hacking", "photography",
-        "books", "web-app", "bots", "ios", "mac", "games", "api-1", "social-media", "task-management",
-        "health-fitness", "education", "slack", "prototyping", "product-hunt", "open-source", "writing", "android",
-        "music", "chrome-extensions", "messaging", "social-network", "venture-capital", "virtual-reality", "fintech",
-        "touch-bar-apps", "augmented-reality", "streaming-services", "github", "travel", "software-engineering",
-        "e-commerce", "crypto", "branding", "news", "saas", "email", "seo", "email-marketing", "calendar",
-        "global-nomad", "freelance", "linkedin", "advertising", "coffee", "investing", "crowdfunding", "gifs",
-        "twitter",
-        "spotify", "startup-books", "imessage-apps", "instagram", "drones", "design-books", "wordpress", "sales",
-        "a-b-testing", "snapchat", "art", "typography", "sketch", "medium", "search", "amazon", "text-editors",
-        "youtube",
-        "virtual-assistants", "apple", "reddit", "hiring", "biohacking", "movies", "photoshop", "languages", "fashion",
-        "payments", "maps", "climate-tech", "windows", "meditation", "menu-bar-apps", "customer-communication",
-        "newsletters", "video-streaming", "time-tracking", "emoji", "funny", "hardware", "privacy",
-        "facebook-messenger",
-        "sports", "robots", "spreadsheets", "wi-fi", "icons", "3d-printer", "cooking", "public-relations", "free-games",
-        "space", "alexa-skills", "website-builder", "pokemon", "notes", "home-automation", "beauty", "linux",
-        "outdoors",
-        "ipad", "vacation", "web-design", "on-demand", "startup-lessons", "storage", "delivery", "indie-games", "web3",
-        "anonymous", "wallpaper", "meetings", "events", "business", "strategy-games", "apple-watch", "cars",
-        "ux-design",
-        "legal", "backpacks", "customer-success", "ridesharing", "tv", "transportation", "blockchain", "dating",
-        "ebook-reader", "board-games", "soundcloud", "pc", "telegram", "side-project", "browser-extensions",
-        "cryptocurrency", "drinking", "development", "no-code", "science-books", "social-media-marketing", "couples",
-        "dogs", "pets", "apple-tv", "finance", "data-analytics", "standing-desks", "emulators", "puzzle-games",
-        "charity-giving", "health", "parenting", "accessories", "politics", "safari-extensions", "ad-blockers",
-        "comics-graphic-novels", "kids", "money", "adventure-games", "jewelry", "graphics-design", "batteries", "cats",
-        "growth-hacks", "design", "oculus-rift", "card-games", "art-books", "sneakers-shoes", "remote-work", "gear-vr",
-        "history-books", "open-world-games", "football", "weather", "retro-games", "biking", "star-wars",
-        "moving-storage", "wine", "action-games", "data-science", "adult-coloring-books", "playstation", "party",
-        "marketing-automation", "medical", "crafting-games", "quantified-self", "sci-fi-games", "data-visualization",
-        "novels", "rpgs", "cookbooks", "social-impact", "simulation-games", "affiliate-marketing", "graphic-design",
-        "arkit", "djing", "online-learning", "business-intelligence", "fantasy-games", "maker-tools", "soccer",
-        "word-games", "alarms", "funny-games", "fashion-books", "custom-keyboards", "food-drink", "community",
-        "platformers", "nft", "sports-games", "tech-news", "yoga-books", "tabletop-games", "xbox", "personal-finance",
-        "basketball", "celebrities", "digital-art", "playstation-vr", "work-in-progress", "notion", "animation",
-        "security", "surfing", "cannabis", "audio", "horror-games", "computers", "swimming", "data", "mmos",
-        "design-resources", "photo-video", "beauty-fashion", "influencer-marketing", "nintendo", "database",
-        "historical-games", "crime-books", "driving-games", "3d-modeling", "entertainment", "human-resources",
-        "first-person-shooter", "design-templates", "bitcoin", "isometric-games", "consulting", "skateboarding",
-        "development-language", "horror-books", "video", "fighting-games", "golf", "thriller-books", "donald-trump",
-        "logo-design", "tennis", "tower-defense-games", "illustration", "diversity-inclusion", "career",
-        "social-networking", "femtech", "zombie-games", "accounting", "crm", "monetization", "business-travel",
-        "kanye-west", "lifestyle", "htc-vive", "banking", "boxing", "science", "photo-editing", "shopping", "defi",
-        "fitness", "health-news", "dj-khaled", "fundraising", "home-improvement", "baseball", "clothing", "hacking",
-        "interior-design", "coding-books", "drake", "construction", "wii-u", "business-books", "operations", "drawing",
-        "home-services", "marketing-attribution", "electronic-music", "vita", "ethereum", "home-office",
-        "event-marketing",
-        "change-management", "dao", "spirituality", "nutrition", "diy", "crafting", "food-delivery", "furniture",
-        "graphics",
-        "video-art", "dapp", "nature-outdoors", "budgeting", "statistical-analysis", "painting", "wireframing",
-        "live-music",
-        "comedy", "electric-cars", "lgbtq", "cell-phone", "nature", "family", "kids-parenting", "aquarium", "cosmetics",
-        "calligraphy", "physics", "hotels", "mixed-reality", "marketing-calendar", "credit-card", "encryption",
-        "printing",
-        "camping", "classical-music", "password-manager", "political-news", "sdk", "live-events", "school",
-        "video-cameras",
-        "farming", "chat-rooms", "vpn", "memes", "running", "plants", "home-security", "extended-reality", "hiking",
-        "coloring",
-        "weightlifting", "local-news", "pop-culture", "inclusivity", "appliances", "streetwear", "modeling",
-        "edge-extensions",
-        "concerts", "survival", "motorcycles", "webcam", "personal-shopper", "hip-hop", "dieting", "toys", "babies",
-        "radio",
-        "alcohol", "tablet", "dslrs", "sporting-events", "intimacy", "sensors", "textbooks", "climbing", "ticketing",
-        "gps",
-        "concert", "theater", "dining", "neighborhood", "college-sports", "military", "home-theater", "racing",
-        "tuning",
-        "snow-sports", "toddlers", "pregnancy", "psychedelics"
-    ]
-
-    most_similar_word, similarity_ratio = find_most_similar_word(word_to_compare, word_list)
-    product_hunt_results = search_product_hunt_for_keywords(most_similar_word)
-
-    if product_hunt_results:
-        display_product_hunt_info(product_hunt_results)
-    else:
-        print(f"{Fore.RED}Product Hunt Error:{Style.RESET_ALL} Unable to retrieve data from Product Hunt")
+        ListTD(pro)
+        hell.pop()
+        pot=prod.copy()
+        del prod
+        del pro
+        return pot
 
 
 
-    def ListTD(L):
-        x = len(L)
-        for i in range(0, x, 3):
-            r = {"Description": L[i + 2], "Website": L[i + 1], "Name": L[i]}
-            prod.append(r)
 
-    ListTD(pro)
-    hell.pop()
-    return prod
-prod=[]
 
 #Summary
 @app.route("/summary")

@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import axios from 'axios'
+import { AiOutlineLoading } from 'react-icons/ai';
 
 const Result = () => {
   const router = useRouter()
   const result = router.query.result
   const [github, setGithub] = useState('')
   const [producthunt, setProducthunt] = useState('')
+  const [gitloading, setGitLoading] = useState(true);
+  const [productloading, setProductLoading] = useState(true);
 
   // Function to handle navigation back to the index page
   const handleGoBack = () => {
@@ -39,11 +42,15 @@ const Result = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const githubData = await getGithubData(result)
+      setGitLoading(true);
+      setProductLoading(true);
+      const githubData = await getGithubData(result);
       setGithub(githubData)
+      setGitLoading(false);
 
-      const productData = await getProductData()
-      setProducthunt(productData)
+      const productData = await getProductData();
+      setProducthunt(productData);
+      setProductLoading(false);
     }
 
     fetchData()
@@ -89,9 +96,9 @@ const Result = () => {
       </div>
 
       {/* Scrollable container for three boxes */}
-      <div className="flex flex-col md:flex-row w-full mt-8 px-2 md:px-4 overflow-auto">
+      <div className="flex flex-col md:flex-row w-full mt-8 px-2 md:px-4 space-y-4 md:space-y-0 md:space-x-4">
         {/* Projects */}
-        <div className="flex flex-col items-center mb-8 md:mb-0 md:mr-4">
+        <div className="flex flex-col items-center md:w-1/3">
           {/* Image above "Projects" heading */}
           <div className="mb-4">
             <img
@@ -106,7 +113,9 @@ const Result = () => {
           </h2>
           <div className="w-72 md:w-96 bg-white rounded-md p-4">
             {/* Iterating over the first 5 GitHub projects */}
-            {Array.isArray(github) &&
+            { gitloading ? (<div className="flex items-center justify-center h-96">
+                <AiOutlineLoading className="animate-spin text-3xl text-purple-500" />
+              </div>) : (Array.isArray(github) &&
               [...github]
                 .sort((a, b) => b.star - a.star)
                 .slice(0, 10)
@@ -126,16 +135,16 @@ const Result = () => {
                       {project.Description}
                     </p>
                     <p className="text-xs text-gray-500">
-                      Issues: {project.Issue} Stars: {project.star}
+                      Stars: {project.star}
                     </p>
                     {/* <p className="text-xs text-gray-500">Stars: {project.star}</p> */}
                   </div>
-                ))}
+                )))}
           </div>
         </div>
 
         {/* Startups */}
-        <div className="flex flex-col items-center mb-8 md:mb-0 md:mx-4">
+        <div className="flex flex-col items-center md:w-1/3">
           {/* Image above "Startups" heading */}
           <div className="mb-4">
             <img
@@ -150,7 +159,9 @@ const Result = () => {
           </h2>
           <div className="w-72 md:w-96 bg-white rounded-md p-4">
             {/* Iterating over the product hunt data */}
-            {Array.isArray(producthunt) &&
+            {productloading ? (<div className="flex items-center justify-center h-96">
+                <AiOutlineLoading className="animate-spin text-3xl text-purple-500" />
+              </div>) :(Array.isArray(producthunt) &&
               producthunt.slice(0, 8).map((product, index) => (
                 <div key={index} className="mb-4 last:mb-0">
                   <a
@@ -163,12 +174,12 @@ const Result = () => {
                   </a>
                   <p className="text-sm text-gray-700">{product.Description}</p>
                 </div>
-              ))}
+              )))}
           </div>
         </div>
 
         {/* Work Opportunities */}
-        <div className="flex flex-col items-center mb-8 md:mb-0 md:ml-4">
+        <div className="flex flex-col items-center md:w-1/3">
           {/* Image above "Work Opportunities" heading */}
           <div className="mb-4">
             <img
@@ -178,12 +189,14 @@ const Result = () => {
               height={170}
             />
           </div>
-          <h2 className="text-2xl md:text-3xl font-bold text-center mb-4">
+          <h2 className="text-2xl md:text-3xl font-bold text-center mb-7">
             Work Opportunities
           </h2>
           <div className="w-72 md:w-96 bg-white rounded-md p-4 overflow-auto">
             {/* Sorting and iterating over GitHub projects based on the number of issues */}
-            {Array.isArray(github) &&
+            {gitloading ? (<div className="flex items-center justify-center h-96">
+                <AiOutlineLoading className="animate-spin text-3xl text-purple-500" />
+              </div>) :(Array.isArray(github) &&
               [...github]
                 .sort((a, b) => b.Issue - a.Issue)
                 .slice(0, 10)
@@ -204,7 +217,7 @@ const Result = () => {
                       Issues: {project.Issue}
                     </p>
                   </div>
-                ))}
+                )))}
           </div>
         </div>
       </div>
@@ -219,8 +232,7 @@ const Result = () => {
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
-          c
-          ssName="w-6 h-6 text-white"
+          className="w-6 h-6 text-white"
         >
           <path
             strokeLinecap="round"
