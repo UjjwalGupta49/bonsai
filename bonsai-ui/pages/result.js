@@ -1,15 +1,18 @@
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import axios from 'axios'
-import { AiOutlineLoading } from 'react-icons/ai';
+import { AiOutlineLoading } from 'react-icons/ai'
 
 const Result = () => {
   const router = useRouter()
   const result = router.query.result
   const [github, setGithub] = useState('')
   const [producthunt, setProducthunt] = useState('')
-  const [gitloading, setGitLoading] = useState(true);
-  const [productloading, setProductLoading] = useState(true);
+  const [gitloading, setGitLoading] = useState(true)
+  const [productloading, setProductLoading] = useState(true)
+  const [selectedProjects, setSelectedProjects] = useState([])
+  const [showModal, setShowModal] = useState(false)
+  const [randomRepos, setRandomRepos] = useState([])
 
   // Function to handle navigation back to the index page
   const handleGoBack = () => {
@@ -42,19 +45,115 @@ const Result = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      setGitLoading(true);
-      setProductLoading(true);
-      const githubData = await getGithubData(result);
+      setGitLoading(true)
+      setProductLoading(true)
+      const githubData = await getGithubData(result)
       setGithub(githubData)
-      setGitLoading(false);
+      setGitLoading(false)
 
-      const productData = await getProductData();
-      setProducthunt(productData);
-      setProductLoading(false);
+      const productData = await getProductData()
+      setProducthunt(productData)
+      setProductLoading(false)
     }
 
     fetchData()
-  }, [result])
+  }, []) // there was result written here
+
+  useEffect(() => {
+    if (selectedProjects.length > 2) {
+      setShowModal(true) // Show the modal
+    } else {
+      setShowModal(false) // Hide the modal
+    }
+  }, [selectedProjects.length])
+
+  // Function to close the modal
+  const handleCloseModal = () => {
+    setShowModal(false)
+  }
+
+  // Function to handle selecting/deselecting projects
+  // Function to handle selecting/deselecting projects
+  const handleProjectSelect = (projectName) => {
+    let newSelectedProjects
+
+    if (selectedProjects.includes(projectName)) {
+      // Deselect project
+      newSelectedProjects = selectedProjects.filter(
+        (project) => project !== projectName,
+      )
+    } else {
+      // Select project
+      newSelectedProjects = [...selectedProjects, projectName]
+    }
+
+    // Set the new list of selected projects
+    setSelectedProjects(newSelectedProjects)
+  }
+  const getRandomRepos = (repos, count) => {
+    // Shuffle array using the Fisher-Yates (Durstenfeld) shuffle algorithm
+    for (let i = repos.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[repos[i], repos[j]] = [repos[j], repos[i]]
+    }
+    // Get first 'count' repos
+    return repos.slice(0, count)
+  }
+
+  // UseEffect for handling modal visibility
+  useEffect(() => {
+    if (selectedProjects.length === 3) {
+      setShowModal(true)
+      setRandomRepos(getRandomRepos([...github], 5))
+    } else {
+      setShowModal(false)
+    }
+  }, [selectedProjects, github])
+
+  const Modal = ({ onClose, randomRepos }) => (
+    <div className="fixed inset-0 z-50">
+      <div
+        className="absolute inset-0 bg-black bg-opacity-50"
+        onClick={onClose}
+      />
+      <div className="relative bg-white p-6 rounded-lg shadow-lg m-4 md:m-8 max-h-full overflow-auto">
+        <h3 className="text-2xl font-bold mb-4 text-center">
+          Random GitHub Repositories
+        </h3>
+        <ul className="space-y-4">
+          {randomRepos.map((repo, index) => (
+            <li key={index} className="bg-gray-100 p-4 rounded-md">
+              <a
+                href={repo.Link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-lg font-semibold text-blue-600 hover:underline"
+              >
+                {repo['Project Name']}
+              </a>
+              <p className="text-sm text-gray-700 mt-2">{repo.Description}</p>
+              <p className="text-xs text-gray-500 mt-1">
+                ⭐ Stars: {repo.star} 🛠️ Issues: {repo.Issue}
+              </p>
+            </li>
+          ))}
+        </ul>
+        <button
+          onClick={onClose}
+          className="mt-6 w-full bg-red-500 text-white font-semibold py-2 px-4 rounded hover:bg-red-700 transition duration-300"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  )
+
+  const renderModal = () => (
+    <Modal onClose={handleCloseModal} randomRepos={randomRepos}>
+      <p>You have selected {selectedProjects.length} projects.</p>
+    </Modal>
+  )
+
   return (
     <div className="flex flex-col items-center justify-start min-h-screen bg-gradient-to-b from-orange-500 to-purple-800 text-white">
       <h1 className="text-3xl md:text-5xl font-bold mt-3 border-b pb-4">
@@ -113,19 +212,34 @@ const Result = () => {
           </h2>
           <div className="w-72 md:w-96 bg-white rounded-md p-4">
             {/* Iterating over the first 5 GitHub projects */}
-            { gitloading ? (<div className="flex items-center justify-center h-96">
+            {gitloading ? (
+              <div className="flex items-center justify-center h-96">
                 <AiOutlineLoading className="animate-spin text-3xl text-purple-500" />
-              </div>) : (Array.isArray(github) &&
-              [...github]
+              </div>
+            ) : (
+              Array.isArray(github) &&
+              github
                 .sort((a, b) => b.star - a.star)
                 .slice(0, 10)
                 .map((project, index) => (
                   <div key={index} className="mb-4 last:mb-0">
+                    {/* Add tick marking system */}
+                    <input
+                      type="checkbox"
+                      id={`project-${index}`}
+                      checked={selectedProjects.includes(
+                        project['Project Name'],
+                      )}
+                      onChange={() =>
+                        handleProjectSelect(project['Project Name'])
+                      }
+                      className="mr-2"
+                    />
                     <a
                       href={project.Link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-lg text-gray-700 font-semibold hover:text-blue-600"
+                      className="text-lg text-gray-700 font-semibold hover:text-blue-600 cursor-pointer"
                     >
                       {project['Project Name'].length > 50
                         ? `${project['Project Name'].substring(0, 50)}...`
@@ -135,11 +249,11 @@ const Result = () => {
                       {project.Description}
                     </p>
                     <p className="text-xs text-gray-500">
-                      Stars: {project.star}
+                      ⭐ Stars: {project.star}
                     </p>
-                    {/* <p className="text-xs text-gray-500">Stars: {project.star}</p> */}
                   </div>
-                )))}
+                ))
+            )}
           </div>
         </div>
 
@@ -159,9 +273,12 @@ const Result = () => {
           </h2>
           <div className="w-72 md:w-96 bg-white rounded-md p-4">
             {/* Iterating over the product hunt data */}
-            {productloading ? (<div className="flex items-center justify-center h-96">
+            {productloading ? (
+              <div className="flex items-center justify-center h-96">
                 <AiOutlineLoading className="animate-spin text-3xl text-purple-500" />
-              </div>) :(Array.isArray(producthunt) &&
+              </div>
+            ) : (
+              Array.isArray(producthunt) &&
               producthunt.slice(0, 8).map((product, index) => (
                 <div key={index} className="mb-4 last:mb-0">
                   <a
@@ -174,7 +291,8 @@ const Result = () => {
                   </a>
                   <p className="text-sm text-gray-700">{product.Description}</p>
                 </div>
-              )))}
+              ))
+            )}
           </div>
         </div>
 
@@ -194,9 +312,12 @@ const Result = () => {
           </h2>
           <div className="w-72 md:w-96 bg-white rounded-md p-4 overflow-auto">
             {/* Sorting and iterating over GitHub projects based on the number of issues */}
-            {gitloading ? (<div className="flex items-center justify-center h-96">
+            {gitloading ? (
+              <div className="flex items-center justify-center h-96">
                 <AiOutlineLoading className="animate-spin text-3xl text-purple-500" />
-              </div>) :(Array.isArray(github) &&
+              </div>
+            ) : (
+              Array.isArray(github) &&
               [...github]
                 .sort((a, b) => b.Issue - a.Issue)
                 .slice(0, 10)
@@ -214,10 +335,11 @@ const Result = () => {
                       {project.Description}
                     </p>
                     <p className="text-xs text-gray-500">
-                      Issues: {project.Issue}
+                      🛠️ Issues: {project.Issue}
                     </p>
                   </div>
-                )))}
+                ))
+            )}
           </div>
         </div>
       </div>
@@ -242,6 +364,8 @@ const Result = () => {
           />
         </svg>
       </button>
+      {/* Conditional rendering of the Modal */}
+      {showModal && renderModal()}
     </div>
   )
 }

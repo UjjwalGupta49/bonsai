@@ -1,0 +1,11 @@
+Flask
+Werkzeug
+Jinja2
+requests
+itsdangerous
+pytz
+click
+colorama
+flask-cors
+difflib
+colorama

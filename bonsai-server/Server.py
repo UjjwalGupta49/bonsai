@@ -14,14 +14,15 @@ CORS(app)
 
 app.config['ENV'] = 'production'
 app.config['DEBUG'] = False
+app.config['REPLICATE_API_TOKEN'] = "REPLICATE_API_TOKEN"
+github = app.config['GITHUB_KEY'] = "GITHUB_TOKEN"
 
-
-def llama_setup():
-    os.environ['REPLICATE_API_TOKEN'] = '<REPLICATE_TOKEN>'
+# def llama_setup():
+#     os.environ['REPLICATE_API_TOKEN'] = ''
 
 
 def generate_keywords(user_input):
-    llama_setup()
+    # llama_setup()
     pre_prompt = '''
     You are a helpful assistant, your job is to extract technology keywords from a given text. You are given a list of technologies and a text. Your task is to extract all the technologies mentioned in the text and return a python dictionary of specified keywords in the text. You will be provided with examples and sample cases of how this data extraction would work.
     You will read the given input from the user and return a python dictionary in specified format. In this converstation you will act as 'Extractor' and the user prompts will be given as 'Input'. In this conversation you can not ask the user for follow up questions and only respond with the extracted python dictionary.
@@ -47,6 +48,10 @@ def generate_keywords(user_input):
     example 5: 
     {
     Input: "data science projects using python", Extractor: "{{"data science": "topics", "data science": "readme", "data science python": "data science": "description"}}"
+    }
+    example 6: 
+    {
+    Input: "movie recommendation system", Extractor: "{{"recommendation": "topics", "movie recommendation": "readme", "movie recommendation": "description"}}"
     }
 
     Extractor should end the conversation after giving it's response for the python dictionary.
@@ -107,7 +112,7 @@ def git():
         url = "https://api.github.com/search/repositories"
         headers = {
             "Accept": "application/vnd.github+json",
-            "Authorization": "Bearer <GITHUB_TOKEN>",
+            "Authorization": f"Bearer {github}",
             "X-GitHub-Api-Version": "2022-11-28"
         }
         response = requests.get(url, headers=headers, params={'q': query})
