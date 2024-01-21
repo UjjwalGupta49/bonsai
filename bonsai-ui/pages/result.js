@@ -8,6 +8,7 @@ const Result = () => {
   const result = router.query.result
   const [github, setGithub] = useState('')
   const [producthunt, setProducthunt] = useState('')
+  const [summary, setSummary] = useState('')
   const [gitloading, setGitLoading] = useState(true)
   const [productloading, setProductLoading] = useState(true)
   const [selectedProjects, setSelectedProjects] = useState([])
@@ -43,6 +44,18 @@ const Result = () => {
     }
   }
 
+  const getSummary = async () => {
+    try {
+      const response = await axios.get(`https://bonsai-server.onrender.com/summary`)
+      console.log(response.data)
+      localStorage.setItem('producthunt', JSON.stringify(response.data))
+      return response.data
+    } catch (error) {
+      console.error('Error fetching Summary data:', error)
+    }
+  }
+
+
   useEffect(() => {
     const fetchData = async () => {
       setGitLoading(true)
@@ -54,6 +67,9 @@ const Result = () => {
       const productData = await getProductData()
       setProducthunt(productData)
       setProductLoading(false)
+
+      const summaryData = await getSummary()
+      setSummary(summaryData)
     }
 
     fetchData()
@@ -187,9 +203,7 @@ const Result = () => {
             <p className="text-md md:text-lg font-bold">llama2</p>
           </div>
           <p className="text-md md:text-lg">
-            This is a summary of the result. You can add your summary text here.
-            This is a summary of the result. You can add your summary text here.
-            This is a summary of the result. You can add your summary text here.
+            {summary}
           </p>
         </div>
       </div>

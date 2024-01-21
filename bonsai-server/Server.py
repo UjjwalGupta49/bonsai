@@ -1,29 +1,34 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, stream_with_context, Response
 import requests
 import json
 from colorama import Fore, Style
-import replicate
+import replicate  # Make sure you have the correct import for 'replicate'
 import os
 import re
 from flask_cors import CORS
 from difflib import SequenceMatcher
 
+# Initialize lists
+github_data = []
+producthunt_data = []
+hell = []
+
 # flask
 app = Flask(__name__)
 CORS(app)
 
+
 app.config['ENV'] = 'production'
 app.config['DEBUG'] = False
-app.config['REPLICATE_API_TOKEN'] = "REPLICATE_API_TOKEN"
 replicate = os.environ.get('REPLICATE_API_TOKEN', 'default_value')
 github = os.environ.get('GITHUB_KEY', 'default_value')
 
 # def llama_setup():
-#     os.environ['REPLICATE_API_TOKEN'] = ''
+#     os.environ['REPLICATE_API_TOKEN'] = 'r8_aULFIHoXx9Z2fbNmht0SfPtULROjd9b4EgKvK'
 
 
 def generate_keywords(user_input):
-    # llama_setup()
+    llama_setup()
     pre_prompt = '''
     You are a helpful assistant, your job is to extract technology keywords from a given text. You are given a list of technologies and a text. Your task is to extract all the technologies mentioned in the text and return a python dictionary of specified keywords in the text. You will be provided with examples and sample cases of how this data extraction would work.
     You will read the given input from the user and return a python dictionary in specified format. In this converstation you will act as 'Extractor' and the user prompts will be given as 'Input'. In this conversation you can not ask the user for follow up questions and only respond with the extracted python dictionary.
@@ -170,11 +175,11 @@ def git():
 
     L2D(x)
     sorted_projects = D.copy()
+    github_data.append(sorted_projects)
     del x
     del D
     return jsonify(sorted_projects)
-
-
+github_data=[]
 
 
 #Product Hunt
@@ -345,22 +350,64 @@ def product():
         ListTD(pro)
         hell.pop()
         pot=prod.copy()
+        producthunt_data.append((pot))
         del prod
         del pro
         return pot
+producthunt_data=[]
 
 
 
 
+# ... (previous configurations)
 
-#Summary
+# Summary
 @app.route("/summary")
 def summary():
-    return 9
+    os.environ['REPLICATE_API_TOKEN'] = 'r8_46MjA4RkrQ6faT0idUiG7wtxDFngkdR0lPDbu'
+    pre_prompt = '''This is a dataset of various tech projects and applications. Each entry includes a description, issue count, project name, and the number of stars received'''
+    data = github_data + producthunt_data
+    prompt = "Based on the provided dataset, generate a concise summary that captures the essence and highlights of these tech projects and applications, including their names and notable features or recognition (like the number of stars)"
+    data_csv = '''
+    Description,Issue,Project Name,star
+    "This repository contains my personal notes and summaries on DeepLearning.ai specialization courses. I've enjoyed every little bit of the course hope you enjoy my notes too.",0,DeepLearning.ai-Summary,5055
+    "The Google Cloud Developer's Cheat Sheet",0,google-cloud-4-words,7597
+    "1 Line of code data quality profiling & exploratory data analysis for Pandas and Spark DataFrames. ",0,ydata-profiling,11701
+    "A comprehensive set of fairness metrics for datasets and machine learning models, explanations for these metrics, and algorithms to mitigate bias in datasets and models.",0,AIF360,2235
+    "Compilation of high-profile real-world examples of failed machine learning projects",0,Failed-ML,594
+    "A curated list of awesome responsible machine learning resources.",0,awesome-machine-learning-interpretability,3231
+    "A comprehensive list of Deep Learning / Artificial Intelligence and Machine Learning tutorials - rapidly expanding into areas of AI/Deep Learning / Machine Vision / NLP and industry specific areas such as Climate / Energy, Automotives, Retail, Pharma, Medicine, Healthcare, Policy, Ethics and more.",0,Artificial-Intelligence-Deep-Learning-Machine-Learning-Tutorials,3578
+    "Discover mentalport: your revolutionary hub for mental health. AI-guided systemic coaching paired with individual 24/7-support from your everyday companion & certified coaches. Unleash your best Self, based on AI & biofeedback. Download now!",,mentalport-app,
+    "Successful people know you can't control everything in life, but how you respond to it. SereneAI makes this easy with hyper-relevant meditation sessions created for your mood and mind. Captivating and impactful, meditation finally becomes a habit you'll love.",,SereneAI,
+    "Duolingo, but for emotional intelligence. Ahead is your pocket coach, built by behavioral scientists from Harvard and Oxford University to transform your life!",,Ahead,
+    "A simple affirmation app designed to enhance your well-being and embrace a more positive mindset. Personalize your affirmations and receive them directly to your phone. Transform your daily life with positive affirmations.",,Avra Core,
+    "Automatically generate clinical notes from patient-clinician conversations, with the use of Gen AI.",,Astra Health AI,
+
+    '''
+    output = ""
+
+    def generate_summary_output():
+        for event in replicate.stream(
+                "meta/llama-2-7b-chat",
+                input={
+                    "debug": False,
+                    "temperature": 0.95,
+                    "prompt": f"Here is a dataset: {data}. ",
+                    "system_prompt": "You are a data summarization expert. Your task is to analyze the query given by and users a generate a paragraph without pointers in 300 characters",
+                    "max_length": 500,
+                    "return_logits": False
+                },
+        ):
+            if hasattr(event, 'data'):
+                nonlocal output
+                output += event.data
+                yield event.data
+
+    # Using stream_with_context to flush the content during streaming
+    return Response(stream_with_context(generate_summary_output()), content_type='text/plain;charset=utf-8')
 
 if __name__ == "__main__":
-    print("http://127.0.0.1:5000/github")
-    print("http://127.0.0.1:5000/producthunt")
-    print("http://127.0.0.1:5000/summary")
-    app.run(debug=True)
-
+    print("https://bonsai-server.onrender.com/github")
+    print("https://bonsai-server.onrender.com/producthunt")
+    print("https://bonsai-server.onrender.com/summary")
+    app.run(debug=False)
