@@ -5,6 +5,7 @@ requests
 itsdangerous
 pytz
 click
+replicate
 colorama
 flask-cors
 colorama
