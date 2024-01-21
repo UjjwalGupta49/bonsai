@@ -22,7 +22,7 @@ const Result = () => {
   const getGithubData = async (result) => {
     try {
       const response = await axios.get(
-        `http://127.0.0.1:5000/github?user_input=${JSON.stringify(result)}`,
+        `https://bonsai-server.onrender.com/github?user_input=${JSON.stringify(result)}`,
       )
       console.log(response.data)
       localStorage.setItem('github', JSON.stringify(response.data))
@@ -34,7 +34,7 @@ const Result = () => {
 
   const getProductData = async () => {
     try {
-      const response = await axios.get(`http://127.0.0.1:5000/producthunt`)
+      const response = await axios.get(`https://bonsai-server.onrender.com/producthunt`)
       console.log(response.data)
       localStorage.setItem('producthunt', JSON.stringify(response.data))
       return response.data
