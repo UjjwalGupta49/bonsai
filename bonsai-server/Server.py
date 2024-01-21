@@ -15,7 +15,8 @@ CORS(app)
 app.config['ENV'] = 'production'
 app.config['DEBUG'] = False
 app.config['REPLICATE_API_TOKEN'] = "REPLICATE_API_TOKEN"
-github = app.config['GITHUB_KEY'] = "GITHUB_TOKEN"
+replicate = os.environ.get('REPLICATE_API_TOKEN', 'default_value')
+github = os.environ.get('GITHUB_KEY', 'default_value')
 
 # def llama_setup():
 #     os.environ['REPLICATE_API_TOKEN'] = ''
